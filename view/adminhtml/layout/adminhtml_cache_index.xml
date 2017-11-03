@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="cache.additional">
+            <block class="Firebear\CloudFlare\Block\Adminhtml\Cache" name="cloudflare.cache" template="Firebear_CloudFlare::system/cache.phtml"/>
+        </referenceBlock>
+        <move element="cache.additional" destination="content" after="adminhtml.cache.container"/>
+    </body>
+</page>

@@ -1,0 +1,23 @@
+<script>
+    
+    require([
+        'jquery',
+        'cf',
+        'Magento_Ui/js/modal/confirm'
+    ], function ($,cf,confirmation) {
+       
+         var params = {internUrl:"<?php echo $block->getInternUrl() ?>", apiIP: "#<?php echo $block->getApiIp() ?>", htmlId: "#<?php echo $block->getHtmlId() ?>",  Operation: 'whitelist', scopeType: "<?php echo $block->getScopeType() ?>" ,scopeCode: "<?php echo $block->getScopeCode() ?>"};
+         $("#<?php echo $block->getHtmlId()?>").on( "click", function() {
+           cloudflareipwhite.ajaxIP(params);
+            
+         });
+          
+        
+    });
+</script>
+
+<div class="pp-buttons-container">
+    <button id="<?php echo $block->getHtmlId() ?>" onclick="return false;">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()); ?></span></span></span>
+    </button>
+</div>

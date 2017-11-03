@@ -1,0 +1,60 @@
+<?php
+$element = $this->getElement();
+?>
+<input type="hidden"
+       data-name="<?php echo $this->getData('data-name') ?>"
+       id="<?php echo $element->getHtmlId() ?>"
+       name="<?php echo $element->getName() ?>"
+       class="cf-ajax"
+       data-type="json"
+       value='<?php echo $element->getValue() ?>' />
+
+
+<select id="<?php echo $element->getHtmlId() ?>_js" class="field_<?php echo $element->getHtmlId() ?>" name="js">
+    <option value="on"><?php echo __('On')?></option>
+    <option value="off"><?php echo __('Off')?></option>
+</select>
+<p class="note">
+    <?php echo __('Javascript')?>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_css" class="field_<?php echo $element->getHtmlId() ?>" name="css">
+    <option value="on"><?php echo __('On')?></option>
+    <option value="off"><?php echo __('Off')?></option>
+</select>
+<p class="note">
+    <?php echo __('CSS')?>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_html" class="field_<?php echo $element->getHtmlId() ?>" name="html">
+    <option value="on"><?php echo __('On')?></option>
+    <option value="off"><?php echo __('Off')?></option>
+</select>
+<p class="note">
+    <?php echo __('HTML')?>
+</p>
+<br/>
+<button class="<?php echo $element->getHtmlId() ?>_button"><?php echo __('Save') ?></button>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'cf'
+    ], function ($, cf) {
+
+        var fieldId = '#<?php echo $element->getHtmlId() ?>';
+        var fieldClass = '.field_<?php echo $element->getHtmlId() ?>';
+        var buttonClass = '.<?php echo $element->getHtmlId() ?>_button';
+        var cloudFlare = new CF();
+
+        if($(fieldId).val() != '') {
+            cloudFlare.setComplexValue(fieldId);
+        }
+
+        $(document).on('click', buttonClass, function(){
+            cloudFlare.prepareComplexValue(fieldId, fieldClass, buttonClass);
+
+            return false;
+        });
+    });
+</script>

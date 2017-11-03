@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Firebear Studio. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+   <!--<preference for="Magento\Framework\Model\AbstractModel" type="Ibnab\DeleteOrder\Model\NormalModel" />-->
+	<preference for="Magento\Framework\HTTP\PhpEnvironment\RemoteAddress" type="Firebear\CloudFlare\Helper\RemoteAddress" />
+</config>

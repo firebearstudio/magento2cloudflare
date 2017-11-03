@@ -1,0 +1,71 @@
+<?php
+$element = $this->getElement();
+$dnsRecords = $this->getDnsRecords();
+?>
+<input type="hidden"
+       data-name="<?php echo $this->getData('data-name') ?>"
+       id="<?php echo $element->getHtmlId() ?>"
+       name="<?php echo $element->getName() ?>"
+       class="cf-ajax"
+       data-type="json"
+       value='<?php echo $element->getValue() ?>' />
+
+
+<select id="<?php echo $element->getHtmlId() ?>_mobile_subdomain" 
+        class="field_<?php echo $element->getHtmlId() ?>" 
+        name="mobile_subdomain">
+    <option><?php echo __('Please choose existing subdomain') ?></option>
+    <?php foreach ($dnsRecords as $code => $subdomain): ?>
+        <option value="<?php echo $code ?>"><?php echo $subdomain ?></option>
+    <?php endforeach; ?>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Which subdomain prefix you wish to redirect visitors on mobile devices to (subdomain must already exist).') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_strip_uri" class="field_<?php echo $element->getHtmlId() ?>" name="strip_uri">
+    <option value="false"><?php echo __('Keep Path')?></option>
+    <option value="true"><?php echo __('Drop Path')?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Whether to drop the current page path and redirect to the mobile subdomain URL root or to keep the path and redirect to the same page on the mobile subdomain') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_status" class="field_<?php echo $element->getHtmlId() ?>" name="status">
+    <option value="off"><?php echo __('Off')?></option>
+    <option value="on"><?php echo __('On')?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Whether or not the mobile redirection is enabled') ?>
+    </span>
+</p>
+<br/>
+<button class="<?php echo $element->getHtmlId() ?>_button"><?php echo __('Save') ?></button>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'cf'
+    ], function ($, cf) {
+
+        var fieldId = '#<?php echo $element->getHtmlId() ?>';
+        var fieldClass = '.field_<?php echo $element->getHtmlId() ?>';
+        var buttonClass = '.<?php echo $element->getHtmlId() ?>_button';
+        var cloudFlare = new CF();
+
+        if($(fieldId).val() != '') {
+            cloudFlare.setComplexValue(fieldId);
+        }
+
+        $(document).on('click', buttonClass, function(){
+            cloudFlare.prepareComplexValue(fieldId, fieldClass, buttonClass);
+
+            return false;
+        });
+    });
+</script>

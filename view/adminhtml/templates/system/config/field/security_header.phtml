@@ -1,0 +1,132 @@
+<?php
+$element = $this->getElement();
+?>
+<input type="hidden"
+       data-name="<?php echo $this->getData('data-name') ?>"
+       id="<?php echo $element->getHtmlId() ?>"
+       name="<?php echo $element->getName() ?>"
+       class="cf-ajax"
+       data-type="json"
+       value='<?php echo $element->getValue() ?>'
+/>
+
+<select id="<?php echo $element->getHtmlId() ?>_enabled"
+        class="field_<?php echo $element->getHtmlId() ?>"
+        name="enabled">
+    <option value="false"><?php echo __('No') ?></option>
+    <option value="true"><?php echo __('Yes') ?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Whether or not strict transport security is enabled') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_max_age"
+        class="field_<?php echo $element->getHtmlId() ?>"
+        name="max_age">
+    <option value="86400"><?php echo __('1 day')?></option>
+    <option value="172800"><?php echo __('2 days')?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Max age in seconds of the strict transport security') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_include_subdomains"
+        class="field_<?php echo $element->getHtmlId() ?>"
+        name="include_subdomains">
+    <option value="false"><?php echo __('No') ?></option>
+    <option value="true"><?php echo __('Yes') ?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Include all subdomains for strict transport security') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_nosniff"
+        class="field_<?php echo $element->getHtmlId() ?>"
+        name="nosniff">
+    <option value="false"><?php echo __('No') ?></option>
+    <option value="true"><?php echo __('Yes') ?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __("Whether or not to include 'X-Content-Type-Options: nosniff' header") ?>
+    </span>
+</p>
+<br />
+<button class="<?php echo $element->getHtmlId() ?>_button do-modal"
+        data-modal-id="#security-header-confirmation">
+    <?php echo __('Save') ?>
+</button>
+
+<div id="security-header-confirmation" data-title="Warning" style="display: none;">
+    <p>
+        HTTP Strict Transport Security (HSTS) can substantially improve the security of your website.
+        However, there are important considerations to keep in mind when enabling HSTS:
+    </p>
+    <p><strong>HTTPS (SSL) must be enabled in order to use HSTS.</strong></p>
+    <ul style="padding-left: 40px;">
+        <li>If you turn on HSTS and do not have HTTPS for your website, browsers will not accept the HSTS setting.</li>
+        <li>
+            If you have HSTS enabled and leave CloudFlare, you need continue to support HTTPS through
+            a new service provider otherwise your site will become inaccessible to visitors until you
+            support HTTPS again.
+        </li>
+        <li>
+            If you turn off CloudFlare’s HTTPS while HSTS is enabled,
+            and you don't have a valid SSL certificate on your origin server,
+            your website will become inaccessible to visitors.
+        </li>
+    </ul>
+    <p><strong>Note</strong>:
+        Disabling CloudFlare’s HTTP can be done in several ways:
+        Grey clouding a subdomain in your DNS records, “Pausing” the CloudFlare service,
+        or having a misconfigured custom SSL certificate through your CloudFlare dashboard (e.g.,
+        invalid SSL certificates, expired certificates, or mismatched host names).
+    </p>
+    <p><strong>If you need to disable HTTPS on your domain</strong>,
+        you must first disable HSTS in your CloudFlare dashboard and wait for the max-age to lapse to guarantee
+        that every browser is aware of this change before you can disable HTTPS. The average max-age is six months
+        (you can set the max-age in the next step). <strong>If you remove HTTPS before disabling HSTS your website
+            will become inaccessible to visitors for up to the max-age or until you support HTTPS again.</strong>
+        Because disabling HTTPS on an HSTS enabled website can have these consequences, we strongly suggest that
+        you have a committed HTTPS service in place before enabling this feature.
+    </p>
+    <p>
+        <a href="https://blog.cloudflare.com/enforce-web-policy-with-hypertext-strict-transport-security-hsts/" target="_blank">
+            More information
+        </a>
+    </p>
+
+</div>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'cf'
+    ], function ($, cf) {
+
+        var fieldId = '#<?php echo $element->getHtmlId() ?>';
+        var fieldClass = '.field_<?php echo $element->getHtmlId() ?>';
+        var buttonClass = '.<?php echo $element->getHtmlId() ?>_button';
+        var additionalKey = false;
+        <?php if($this->getData('additional_key')):?>
+            additionalKey = '<?php echo $this->getData('additional_key'); ?>';
+        <?php endif; ?>
+        var cloudFlare = new CF();
+
+        if($(fieldId).val() != '') {
+            cloudFlare.setComplexValue(fieldId, additionalKey);
+        }
+
+        $(document).on('click', buttonClass, function(){
+            cloudFlare.prepareComplexValue(fieldId, fieldClass, buttonClass, additionalKey);
+
+            return false;
+        });
+    });
+</script>

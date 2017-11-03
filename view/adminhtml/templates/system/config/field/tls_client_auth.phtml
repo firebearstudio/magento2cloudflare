@@ -1,0 +1,56 @@
+<?php
+$element = $this->getElement();
+?>
+<input type="hidden" data-name="<?php echo $this->getData('data-name') ?>" id="<?php echo $element->getHtmlId() ?>" name="<?php echo $element->getName() ?>" class="cf-ajax" data-type="json" value="" />
+
+<input type="hidden" id="<?php echo $element->getHtmlId() ?>_id" class="field_<?php echo $element->getHtmlId() ?>" name="id" value="tls_client_auth" />
+
+<select id="<?php echo $element->getHtmlId() ?>_value" class="field_<?php echo $element->getHtmlId() ?>" name="value">
+    <option value="on"><?php echo __('On') ?></option>
+    <option value="off"><?php echo __('Off') ?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Value of the zone setting') ?>
+    </span>
+</p>
+<br/>
+<select id="<?php echo $element->getHtmlId() ?>_editable" class="field_<?php echo $element->getHtmlId() ?>" name="editable">
+    <option value="true"><?php echo __('Yes') ?></option>
+    <option value="false"><?php echo __('No') ?></option>
+</select>
+<p class="note">
+    <span>
+        <?php echo __('Whether or not this setting can be modified for this zone (based on your CloudFlare plan level)') ?>
+    </span>
+</p>
+<input type="hidden" id="<?php echo $element->getHtmlId() ?>_modified_on" class="field_<?php echo $element->getHtmlId() ?>" name="modified_on" value="<?php echo date('c'); ?>">
+<br/>
+<button class="<?php echo $element->getHtmlId() ?>_button"><?php echo __('Save') ?></button>
+
+<script type="text/javascript">
+    require([
+        'jquery',
+        'cf'
+    ], function ($, cf) {
+
+        var fieldId = '#<?php echo $element->getHtmlId() ?>';
+        var fieldClass = '.field_<?php echo $element->getHtmlId() ?>';
+        var buttonClass = '.<?php echo $element->getHtmlId() ?>_button';
+        var additionalKey = false;
+        <?php if($this->getData('additional_key')):?>
+            additionalKey = '<?php echo $this->getData('additional_key'); ?>';
+        <?php endif; ?>
+        var cloudFlare = new CF();
+
+        if($(fieldId).val() != '') {
+            cloudFlare.setComplexValue(fieldId);
+        }
+
+        $(document).on('click', buttonClass, function(){
+            cloudFlare.prepareComplexValue(fieldId, fieldClass, buttonClass, additionalKey);
+
+            return false;
+        });
+    });
+</script>

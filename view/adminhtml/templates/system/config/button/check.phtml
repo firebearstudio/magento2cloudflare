@@ -1,0 +1,32 @@
+<div class="pp-buttons-container">
+    <button id="<?php echo $block->getHtmlId() ?>" onclick="return false;">
+        <span><span><span><?php echo $block->escapeHtml($block->getButtonLabel()); ?></span></span></span>
+    </button>
+</div>
+ <div id="spinner"  class="admin__data-grid-loading-mask">
+                    <div class="spinner">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+ <div id="confirm"></div>
+<?php
+$jsonHelper = $this->helper('Magento\Framework\Json\Helper\Data');
+?>
+
+<script>
+    
+    require([
+        'jquery',
+        'cf'
+    ], function ($,cf) {
+       
+         
+         cloudflarecheck.initialize();
+         var params = {internUrl:"<?php echo $block->getInternUrl() ?>", apiEmailId: "#<?php echo $block->getApiEmailId() ?>", apiKeyId: "#<?php echo $block->getApiKeyId() ?>", apiDomainId: "#<?php echo $block->getApiDomainId() ?>", htmlId: "#<?php echo $block->getHtmlId() ?>", loadConfigUrl: "<?php echo $block->getLoadConfigUrl() ?>", scopeType: "<?php echo $block->getScopeType() ?>" ,scopeCode: "<?php echo $block->getScopeCode() ?>"}; 
+         $("#<?php echo $block->getHtmlId() ?>").on( "click", function() {
+            cloudflarecheck.ajaxCheck(params);
+         });
+          
+        
+    });
+</script>

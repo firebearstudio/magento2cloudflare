@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Firebear_CloudFlare::css/style.css"/>
+        <css src="Firebear_CloudFlare::js/c3/c3.min.css"/>
+        <script src="Firebear_CloudFlare::js/c3/c3.min.js"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Firebear\CloudFlare\Block\Adminhtml\Analytics" name="hello" template="Firebear_CloudFlare::index.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

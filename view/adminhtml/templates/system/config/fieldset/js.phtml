@@ -1,0 +1,52 @@
+
+<script>
+    require([
+        'jquery',
+        'cf',
+        'Magento_Ui/js/modal/confirm',
+        'Magento_Ui/js/modal/alert'
+    ], function ($,cf,confirmation,alert) {
+
+        var params = {
+            scopeType: '<?php echo $this->getScopeType() ?>',
+            scopeCode: '<?php echo $this->getScopeCode() ?>'
+        };
+
+        var fieldSelector = '.cf-ajax';
+        var url = '<?php echo $this->getUrl('cloudflare/apicontrol/zonesettings') ?>';
+        var originValue;
+
+        var $cfAjaxFields = jQuery(fieldSelector);
+        $cfAjaxFields.each(function(i, el){
+            var $field = jQuery(el);
+            $field.on('focus', function() {
+                originValue = $field.val();
+            }).on('change', function(){
+                var name = $field.data('name');
+                $.ajax({
+                    type: 'GET',
+                    data: {
+                        'name':             name,
+                        'value':            $field.val(),
+                        'type':             $field.data('type') ? $field.data('type') : null,
+                        '<?php echo $this->getScopeType() ?>': '<?php echo $this->getScopeCode() ?>'
+                    },
+                    url:  url,
+                    showLoader: true,
+                    success: function(data){
+                        if (data.status == 'error') {
+                            $field.val(originValue);
+                            alert({
+                                title: $.mage.__('Error saving setting.'),
+                                content: $.mage.__(data.message),
+                                actions: {
+                                    always: function(){}
+                                }
+                            });
+                        }
+                    }
+                })
+            });
+        });
+    });
+</script>

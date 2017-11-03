@@ -1,0 +1,167 @@
+<?php
+$zones = $this->getZones();
+if (!empty($zones)) {
+?>
+<p>
+    <button
+        id="purge_all"
+        data-url="<?php /* @escapeNotVerified */ echo $this->getUrl('cloudflare/cache/purge') ?>"
+        data-all="1"
+        type="button">
+        <?php /* @escapeNotVerified */ echo __('Flush CloudFlare Cache') ?>
+    </button>
+    <span>
+        <?php
+        /* @escapeNotVerified */
+        echo __('Purging the cache may temporarily degrade performance for your website.')
+        ?>
+    </span>
+</p>
+<p>
+    <button
+        id="purge_individual"
+        data-url="<?php /* @escapeNotVerified */ echo $this->getUrl('cloudflare/cache/purgeindividual') ?>"
+        data-all="0"
+        type="button">
+        <?php /* @escapeNotVerified */ echo __('Flush CloudFlare Individual Files') ?>
+    </button>
+    <span>
+        <?php
+        /* @escapeNotVerified */
+        echo __('Purging the cache may temporarily degrade performance for your website.')
+        ?>
+    </span>
+    <div id="purge_individual_modal" data-role="purge_individual_modal" style="display: none;">
+        <p>
+            <?php echo __('You can purge up to 30 files at a time.') ?>
+        </p>
+        <p>
+            <b><?php echo __('Note:') ?></b>
+            <?php echo __(
+                'Wildcards are not supported with single file purge at this time. 
+                                You will need to specify the full path to the file.'
+            ) ?>
+        </p>
+        <div class="admin__scope-old">
+            <div class="form-inline">
+                <div class="fieldset">
+                    <div class="field">
+                        <label class="label admin__field-label" for="domain">
+                            <span><?php echo __('Domain') ?></span>
+                        </label>
+                        <div class="control">
+                            <select name="domain" id="domain" class="select admin__control-select">
+                                <?php foreach($zones as $zone): ?>
+                                    <option value="<?php echo $zone['domain'] ?>"
+                                            data-store="<?php echo $zone['store'] ?>">
+                                        <?php echo $zone['domain'] ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label admin__field-label" for="files">
+                            <span><?php echo __('Files') ?></span>
+                        </label>
+                        <div class="control">
+                            <textarea name="files"
+                                      id="files"
+                                      class="textarea admin__control-textarea"
+                                      rows="2"
+                                      cols="5"
+                                      placeholder="<?php echo 'http://www.example.com/static/frontend/Magento/luma/en_US/css/styles-m.css'?>"></textarea>
+                            <div class="note">
+                                <?php echo __('Separate URL(s) with spaces, or list one per line') ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</p>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/alert',
+        'Magento_Ui/js/modal/modal',
+    ], function($, alert, modal) {
+
+        $(document).on('click', '#purge_individual, #purge_all', function(){
+            $button = $(this);
+            var url = $button.data('url');
+
+            var title = $.mage.__('Purge Everything');
+
+            if ($button.data('all') == '0') {
+                $('#files').parent().parent().show();
+                title = $.mage.__('Purge Individual Files');
+            } else {
+                $('#files').parent().parent().hide();
+            }
+
+            var options = {
+                type: 'popup',
+                responsive: true,
+                innerScroll: true,
+                title: title,
+                buttons: [{
+                    text: title,
+                    class: 'action-primary action-accept',
+                    click: function (event) {
+                        var $data = {
+                            'domain': $('#domain').val()
+                        };
+
+                        if ($button.data('all') == '0') {
+                            $data['files'] = $('#files').val();
+                        }
+
+                        (function ($) {
+                            $.ajax({
+                                url: url,
+                                method: 'POST',
+                                data: $data,
+                                showLoader: true
+                            }).done(function (data) {
+                                var modalClass = 'modal-system-messages ui-popup-message';
+                                var title = 'Error';
+                                if (data.success) {
+                                    modalClass = '';
+                                    title = $.mage.__('Success');
+                                    $('#files').val('');
+                                }
+                                alert({
+                                    modalClass: modalClass,
+                                    title: title,
+                                    content: data.message
+                                });
+                            }).fail(function (jqXHR, textStatus) {
+                                if (window.console) {
+                                    console.log(textStatus);
+                                }
+                            });
+                        })(jQuery);
+
+                        this.closeModal(event);
+                    }
+                },
+                {
+                    text: $.mage.__('Cancel'),
+                    class: 'action-secondary action-dismiss',
+                    click: function (event) {
+                        this.closeModal(event);
+                    }
+                }]
+            };
+
+            var popup = modal(options, $('#purge_individual_modal'));
+
+            $('#purge_individual_modal').modal('openModal');
+
+            return false;
+        });
+    });
+</script>
+<?php } ?>

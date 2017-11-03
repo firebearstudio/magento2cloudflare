@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Firebear Studio. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Firebear_CloudFlare::firebear_cloudflare_control" title="CloudFlare Control Section" />
+                        </resource>
+                    </resource>
+                </resource>
+
+                <resource id="Magento_Reports::report" title="Reports" sortOrder="70">
+                    <resource id="Firebear_CloudFlare::analytics" title="CloudFlare" sortOrder="80">
+                        <resource id="Firebear_CloudFlare::zone_analytics" title="Analytics" sortOrder="10"/>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

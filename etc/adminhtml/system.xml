@@ -1,0 +1,313 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Firebear Studio. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="firebear" translate="label" sortOrder="200">
+            <label>FireBear</label>
+        </tab>
+        <section id="firebear_cloudflare_control" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>CloudFlare Control</label>
+            <tab>firebear</tab>
+            <resource>Firebear_CloudFlare::firebear_cloudflare_control</resource>
+            <group id="apioptions" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>API Access details</label>
+                <field id="api_email" translate="label comment" type="text" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>E-Mail</label>
+                    <comment>E-Mail associated with cloudflare account.</comment>
+                </field>
+                <field id="api_key" translate="label comment" type="password" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Key</label>
+                    <comment><![CDATA[This is the CloudFlare API key made available on your <a href="https://www.cloudflare.com/my-account.html" target="_blank">Account</a> page.]]></comment>
+                </field>
+                <field id="api_domain" translate="label comment" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Domain Name</label>
+                    <comment></comment>
+                </field>
+                <field id="check" translate="button_label"  sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label/>
+                    <attribute type="api_key_id">firebear_cloudflare_control_apioptions_api_key</attribute>
+                    <attribute type="api_email_id">firebear_cloudflare_control_apioptions_api_email</attribute>
+                    <attribute type="api_domain_id">firebear_cloudflare_control_apioptions_api_domain</attribute>                   
+                    <attribute type="load_config_url"><![CDATA[cloudflare/apicontrol/loadconfig]]></attribute>
+                    <button_label><![CDATA[Check & load current settings]]></button_label>
+                    <button_url>
+                        <![CDATA[cloudflare/apicontrol/check]]>
+                    </button_url>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Button\Check</frontend_model>
+                    <comment><![CDATA[Once you check you API access, please click Save Setting for begin use extension. If you continue get error about wrong API access, try click Save Config and then check & load settings again. <br /><b>IMPORTANT NOTE:</b> If you update settings from CloudFlare admin, you should always click this button for get updated settings before change it from Magento!]]></comment>
+                </field>
+            </group>
+            <group id="zone_settings" translate="label" type="text" sortOrder="91" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Zone Settings</label>
+                <comment>You can adjust your overall security and performance profiles on this tab, as well as some other important settings. After changes on this tab, please click Save Config button in right corner for update CloudFlare settings!</comment>
+
+                <field id="always_online" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Always Online</label>
+                    <comment><![CDATA[When enabled, Always Online will serve pages from our cache if your server is offline (<a href="https://support.cloudflare.com/hc/en-us/articles/200168006" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168006</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="browser_cache_ttl" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Browser Cache TTL</label>
+                    <comment><![CDATA[Browser Cache TTL (in seconds) specifies how long CloudFlare-cached resources will remain on your visitors' computers. CloudFlare will honor any larger times specified by your server. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168276" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168276</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\BrowserTTL</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="browser_check" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Browser Check</label>
+                    <comment><![CDATA[Browser Integrity Check is similar to Bad Behavior and looks for common HTTP headers abused most commonly by spammers and denies access to your page. It will also challenge visitors that do not have a user agent or a non standard user agent (also commonly used by abuse bots, crawlers or visitors). (<a href="https://support.cloudflare.com/hc/en-us/articles/200170086" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170086</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="cache_level" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cache Level</label>
+                    <comment><![CDATA[Cache Level functions based off the setting level. The basic setting will cache most static resources (i.e., css, images, and JavaScript). The simplified setting will ignore the query string when delivering a cached resource. The aggressive setting will cache all static resources, including ones with a query string. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168256" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168256</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Cachelvl</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="challenge_ttl" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Challenge TTL</label>
+                    <comment><![CDATA[Specify how long a visitor is allowed access to your site after successfully completing a challenge (such as a CAPTCHA). After the TTL has expired the visitor will have to complete a new challenge. We recommend a 15 - 45 minute setting and will attempt to honor any setting above 45 minutes. (<a href="https://support.cloudflare.com/hc/en-us/articles/200170136" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170136</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\ChallangeTTL</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="development_mode" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Development Mode</label>
+                    <comment><![CDATA[Development Mode temporarily allows you to enter development mode for your websites if you need to make changes to your site. This will bypass CloudFlare's accelerated cache and slow down your site, but is useful if you are making changes to cacheable content (like images, css, or JavaScript) and would like to see those changes right away. Once entered, development mode will last for 3 hours and then automatically toggle off.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="email_obfuscation" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email Obfuscation</label>
+                    <comment><![CDATA[Encrypt email adresses on your web page from bots, while keeping them visible to humans. (<a href="https://support.cloudflare.com/hc/en-us/articles/200170016" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170016</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="origin_error_page_pass_thru" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Error Pages</label>
+                    <comment><![CDATA[CloudFlare will proxy customer error pages on any 502,504 errors on origin server instead of showing a default CloudFlare error page. This does not apply to 522 errors and is limited to Enterprise Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="sort_query_string_for_cache" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Query String Sort</label>
+                    <comment><![CDATA[CloudFlare will treat files with the same query strings as the same file in cache, regardless of the order of the query strings. This is limited to Enterprise Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="hotlink_protection" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hotlink Protection</label>
+                    <comment><![CDATA[When enabled, the Hotlink Protection option ensures that other sites cannot suck up your bandwidth by building pages that use images hosted on your site. Anytime a request for an image on your site hits CloudFlare, we check to ensure that it's not another site requesting them. People will still be able to download and view images from your page, but other sites won't be able to steal them for use on their own pages. (<a href="https://support.cloudflare.com/hc/en-us/articles/200170026" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170026</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="ip_geolocation" translate="label comment" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>IP Geolocation</label>
+                    <comment><![CDATA[Enable IP Geolocation to have CloudFlare geolocate visitors to your website and pass the country code to you. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168236" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168236</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="ipv6" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>IPv6</label>
+                    <comment><![CDATA[Enable IPv6 on all subdomains that are CloudFlare enabled. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168586" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168586</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="minify" translate="label comment" type="select" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minify</label>
+                    <comment><![CDATA[Automatically minify certain assets for your website. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168196" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168196</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Minify</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Custom</frontend_model>
+                    <attribute type="template">system/config/field/minify.phtml</attribute>
+                </field>
+                <field id="mobile_redirect" translate="label comment" type="text" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mobile Redirect</label>
+                    <comment><![CDATA[Automatically redirect visitors on mobile devices to a mobile-optimized subdomain. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168336" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168336</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\MobileRedirect</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Custom</frontend_model>
+                    <attribute type="template">system/config/field/mobile_redirect.phtml</attribute>
+                </field>
+                <field id="mirage" translate="label comment" type="select" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mirage</label>
+                    <comment><![CDATA[Automatically optimize image loading for website visitors on mobile devices. (<a href="http://blog.cloudflare.com/mirage2-solving-mobile-speed" target="_blank">http://blog.cloudflare.com/mirage2-solving-mobile-speed</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="polish" translate="label comment" type="select" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Polish</label>
+                    <comment><![CDATA[Strips metadata and compresses your images for faster page load times. Basic (Lossless): Reduce the size of PNG, JPEG, and GIF files - no impact on visual quality. Basic + JPEG (Lossy): Further reduce the size of JPEG files for faster image loading. Larger JPEGs are converted to progressive images, loading a lower-resolution image first and ending in a higher-resolution version. Not recommended for hi-res photography sites.]]></comment>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                    <options>
+                        <option label="Off">off</option>
+                        <option label="Basic">lossless</option>
+                        <option label="Basic + JPEG">lossy</option>
+                    </options>
+                </field>
+                <field id="prefetch_preload" translate="label comment" type="select" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Prefetch Preload</label>
+                    <comment><![CDATA[CloudFlare will prefetch any URLs that are included in the response headers. This is limited to Enterprise Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="response_buffering" translate="label comment" type="select" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Response Buffering</label>
+                    <comment><![CDATA[Enables or disables buffering of responses from the proxied server. CloudFlare may buffer the whole payload to deliver it at once to the client versus allowing it to be delivered in chunks. By default, the proxied server streams directly and is not buffered by CloudFlare. This is limited to Enterprise Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="rocket_loader" translate="label comment" type="select" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Rocket Loader</label>
+                    <comment><![CDATA[Rocket Loader is a general-purpose asynchronous JavaScript loader coupled with a lightweight virtual browser which can safely run any JavaScript code after window.onload. Turning on Rocket Loader will immediately improve a web page's window.onload time (assuming there is JavaScript on the page), which can have a positive impact on your Google search ranking. Automatic Mode: Rocket Loader will automatically run on the JavaScript resources on your site, with no configuration required after turning on automatic mode. Manual Mode: In order to have Rocket Loader execute for a particular script, you must add the following attribute to the script tag: "data-cfasync='true'". As your page passes through CloudFlare, we'll enable Rocket Loader for that particular script. All other JavaScript will continue to execute without CloudFlare touching the script. (<a href="https://support.cloudflare.com/hc/en-us/articles/200168056" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200168056</a>)]]></comment>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                    <options>
+                        <option label="Off">off</option>
+                        <option label="Automatic">on</option>
+                        <option label="Manual">manual</option>
+                    </options>
+                </field>
+                <field id="security_header" translate="label comment" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Security Header (HSTS)</label>
+                    <comment><![CDATA[CloudFlare security header for a zone.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\MobileRedirect</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Custom</frontend_model>
+                    <attribute type="template">system/config/field/security_header.phtml</attribute>
+                    <attribute type="additionalKey">strict_transport_security</attribute>
+                </field>
+                <field id="security_level" translate="label comment" type="select" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Security Level</label>
+                    <comment><![CDATA[Choose the appropriate security profile for your website, which will automatically adjust each of the security settings. If you choose to customize an individual security setting, the profile will become Custom. (<a href="https://support.cloudflare.com/hc/en-us/articles/200170056" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170056</a>)]]></comment>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                    <options>
+                        <option label="Off">off</option>
+                        <option label="Essentially Off">essentially_off</option>
+                        <option label="Low">low</option>
+                        <option label="Media">medium</option>
+                        <option label="High">high</option>
+                        <option label="I'm Under Attack!">under_attack</option>
+                    </options>
+                </field>
+                <field id="server_side_exclude" translate="label comment" type="select" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Server Side Exclude</label>
+                    <comment><![CDATA[If there is sensitive content on your website that you want visible to real visitors, but that you want to hide from suspicious visitors, all you have to do is wrap the content with CloudFlare SSE tags. Wrap any content that you want to be excluded from suspicious visitors in the following SSE tags: . For example: Bad visitors won't see my phone number, 555-555-5555 . Note: SSE only will work with HTML. If you have HTML minification enabled, you won't see the SSE tags in your HTML source when it's served through CloudFlare. SSE will still function in this case, as CloudFlare's HTML minification and SSE functionality occur on-the-fly as the resource moves through our network to the visitor's computer. (<a href="https://support.cloudflare.com/hc/en-us/articles/200170036" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170036</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="ssl" translate="label comment" type="select" sortOrder="230" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>SSL</label>
+                    <comment><![CDATA[SSL encrypts your visitor's connection and safeguards credit card numbers and other personal data to and from your website. SSL can take up to 5 minutes to fully activate. Requires CloudFlare active on your root domain or www domain. Off: no SSL between the visitor and CloudFlare, and no SSL between CloudFlare and your web server (all HTTP traffic). Flexible: SSL between the visitor and CloudFlare -- visitor sees HTTPS on your site, but no SSL between CloudFlare and your web server. You don't need to have an SSL cert on your web server, but your vistors will still see the site as being HTTPS enabled. Full: SSL between the visitor and CloudFlare -- visitor sees HTTPS on your site, and SSL between CloudFlare and your web server. You'll need to have your own SSL cert or self-signed cert at the very least. Full (Strict): SSL between the visitor and CloudFlare -- visitor sees HTTPS on your site, and SSL between CloudFlare and your web server. You'll need to have a valid SSL certificate installed on your web server. This certificate must be signed by a certificate authority, have an expiration date in the future, and respond for the request domain name (hostname). (<a href="https://support.cloudflare.com/hc/en-us/articles/200170416" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200170416</a>)]]></comment>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                    <options>
+                        <option label="Off">off</option>
+                        <option label="Flexible">flexible</option>
+                        <option label="Full">full</option>
+                        <option label="Full (strict)">full_strict</option>
+                    </options>
+                </field>
+                <field id="tls_client_auth" translate="label comment" type="text" sortOrder="240" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>TLS Client Auth</label>
+                    <comment><![CDATA[TLS Client Auth requires CloudFlare to connect to your origin server using a client certificate (Enterprise Only)]]></comment>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Custom</frontend_model>
+                    <attribute type="template">system/config/field/tls_client_auth.phtml</attribute>
+                </field>
+                <field id="true_client_ip_header" translate="label comment" type="select" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>True Client IP</label>
+                    <comment><![CDATA[Allows customer to continue to use True Client IP (Akamai feature) in the headers we send to the origin. This is limited to Enterprise Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="tls_1_2_only" translate="label comment" type="select" sortOrder="250" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>TLS 1.2</label>
+                    <comment><![CDATA[Enable Crypto TLS 1.2 feature for this zone and prevent use of previous versions. This is limited to Enterprise or Business Zones.]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+                <field id="waf" translate="label comment" type="select" sortOrder="260" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Web Application Firewall (WAF)</label>
+                    <comment><![CDATA[The WAF examines HTTP requests to your website. It inspects both GET and POST requests and applies rules to help filter out illegitimate traffic from legitimate website visitors. The CloudFlare WAF inspects website addresses or URLs to detect anything out of the ordinary. If the CloudFlare WAF determines suspicious user behavior, then the WAF will 'challenge' the web visitor with a page that asks them to submit a CAPTCHA successfully to continue their action. If the challenge is failed, the action will be stopped. What this means is that CloudFlare's WAF will block any traffic identified as illegitimate before it reaches your origin web server. (<a href="https://support.cloudflare.com/hc/en-us/articles/200172016" target="_blank">https://support.cloudflare.com/hc/en-us/articles/200172016</a>)]]></comment>
+                    <source_model>Firebear\CloudFlare\Model\Config\Source\Onoff</source_model>
+                    <frontend_class>cf-ajax</frontend_class>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Select</frontend_model>
+                </field>
+            </group>
+            <group id="cf_js" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <frontend_model>Firebear\CloudFlare\Block\System\Config\Fieldset\Js</frontend_model>
+                <help_url>https://www.paypal-marketing.com/emarketing/partner/na/merchantlineup/home.page#mainTab=checkoutlineup</help_url>
+            </group>
+            <group id="threat" translate="label" type="text" sortOrder="92" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Threat control</label>
+                <comment><![CDATA[You can find Threat control in CloudFlare admin -> you domain analytics Threat control. <a href="https://support.cloudflare.com/hc/en-us/articles/200170146-What-do-the-items-in-Threat-Control-mean-" target="_blank">Learn more…</a>]]></comment>
+                <field id="threatip" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Whitelist/Blacklist/Unlist IPs / IP :</label>
+                </field>
+                <field id="unlist" translate="label comment" type="button" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label></label>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Button\Unlist</frontend_model>
+                    <button_label>Challenge</button_label>
+                    <attribute type="api_ip" >firebear_cloudflare_control_threat_threatip</attribute>
+                    <button_url>
+                        <![CDATA[cloudflare/apicontrol/ip]]>
+                    </button_url>
+                </field>
+                <field id="blacklist" translate="label comment" type="button" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label></label>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Button\Blacklist</frontend_model>
+                    <button_label>Blacklist</button_label>
+                    <attribute type="api_ip" >firebear_cloudflare_control_threat_threatip</attribute>
+                    <button_url>
+                        <![CDATA[cloudflare/apicontrol/ip]]>
+                    </button_url>
+                </field>
+                <field id="whitelist" translate="label comment" type="button" sortOrder="23" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label></label>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Button\Whitelist</frontend_model>
+                    <button_label>Whitelist</button_label>
+                    <attribute type="api_ip" >firebear_cloudflare_control_threat_threatip</attribute>
+                    <button_url>
+                        <![CDATA[cloudflare/apicontrol/ip]]>
+                    </button_url>
+                    <comment><![CDATA[Please click one of buttons above for add/remove entered IP from list.]]></comment>
+                </field>
+                <field id="iplist" translate="label comment" type="button" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show a list of IP address which hit your site classified by type.</label>
+                    <button_label>Show IP list</button_label>
+                    <button_url>
+                        <![CDATA[cloudflare/apicontrol/listip]]>
+                    </button_url>
+                    <frontend_model>Firebear\CloudFlare\Block\System\Config\Button\Iplist</frontend_model>
+                    <comment><![CDATA[IP list be opened in new browser tab.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

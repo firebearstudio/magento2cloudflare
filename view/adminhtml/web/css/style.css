@@ -1,0 +1,43 @@
+/**
+ * Copyright © 2016 Firebear Studio. All rights reserved.
+ */
+
+.cloudflare-analytics-dashboard small {
+    color: #aaa;
+}
+.cloudflare-analytics-dashboard .chart-sizes {
+    width: 245px;
+    height: 180px;
+    line-height: 180px;
+    font-size: 3.0rem;
+    font-weight: 700;
+    margin: 0 auto;
+}
+.cloudflare-analytics-dashboard > .row {
+    border-top: 1px solid #eaeaea;
+    padding-top: 36px;
+}
+.analytics-block {
+    text-align: center;
+    margin-bottom: 36px;
+}
+.analytics-block .title {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.analytics-block .c3-chart-arc text {
+    font-weight: 400;
+    font-size: 1.1rem;
+    text-shadow: 1px 1px 1px;
+}
+.analytics-block .block-table {
+    max-width: 300px;
+    margin: 18px auto;
+}
+.analytics-block .block-table td {
+    text-align: left;
+}
+.c3-chart-arc text .c3-chart-arcs-title {
+    font-weight: 100;
+    font-size: 2.5rem;
+}

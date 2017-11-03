@@ -1,0 +1,943 @@
+<?php
+$helper = $this->getConfig();
+$sinceArray = $helper->getAnalyticsSinceAsArray();
+$sinceParams = $helper->getAnalyticsSinceParams($this->getSince());
+$zones = $helper->getZones();
+$domain = $this->getDomain();
+?>
+<div class="cloudflare-analytics-dashboard">
+    <h1  style="float:left"><?php echo __('CloudFlare Analytics')?></h1>
+
+    <select name="since" id="since" class="admin__control-select" onchange="window.location=this.value" style="float:right">
+        <?php foreach ($sinceArray as $value => $since): ?>
+            <?php
+            $selected = '';
+            if($value == $this->getSince()) {
+                $selected = ' selected="selected"';
+            }
+            ?>
+            <option value="<?php echo $this->getUrl('*/*/*', ['domain' => $domain, 'since' => $value]); ?>"<?php echo $selected ?>>
+                <?php echo $since['label'] ?>
+            </option>
+        <?php endforeach;  ?>
+    </select>
+
+    <select name="domain" id="domain" class="admin__control-select" onchange="window.location=this.value" style="float:right; margin-right: 20px;">
+        <?php foreach ($zones as $zone): ?>
+            <?php
+            $selected = '';
+            if($zone['domain'] == $domain) {
+                $selected = ' selected="selected"';
+            }
+            ?>
+            <option value="<?php echo $this->getUrl('*/*/*', ['domain' => $zone['domain'], 'since' => $this->getSince()]); ?>"<?php echo $selected ?>>
+                <?php echo $zone['domain'] ?>
+            </option>
+        <?php endforeach;  ?>
+    </select>
+    <div class="clear" style="clear:both"></div>
+    <br /><br />
+    <?php
+
+    $data = $this->getCloudflareData();
+
+    if (isset($data['result']['errors'][0]['message'])) {
+
+        echo $data['result']['errors'][0]['message'];
+
+    } elseif (isset($data['result']['timeseries'])) {
+
+        $x = $requests = $uniques = $threats = $threatTypes = [];
+
+        $uniques['min'] = $data['result']['totals']['uniques']['all'];
+        $uniques['max'] = 0;
+
+        foreach ($data['result']['totals']['threats']['type'] as $type => $count) {
+            $threatTypes[$type] = [];
+        }
+
+        foreach ($data['result']['timeseries'] as $timeseries) {
+            if (empty($x)) {
+                $datetime = new DateTime($timeseries['since']);
+                $x[] = $datetime->format('Y-m-d H:i:s');
+            }
+            $datetime = new DateTime($timeseries['until']);
+            $x[] = $datetime->format('Y-m-d H:i:s');
+            $requests['cached'][] = $timeseries['requests']['cached'];
+            $requests['uncached'][] = $timeseries['requests']['uncached'];
+            $bandwidth['cached'][] = $timeseries['bandwidth']['cached'];
+            $bandwidth['uncached'][] = $timeseries['bandwidth']['uncached'];
+            $threats[] = $timeseries['threats']['all'];
+
+            foreach ($threatTypes as $type => $values) {
+                $threatTypes[$type][] = isset($timeseries['threats']['type'][$type]) ? $timeseries['threats']['type'][$type] : 0;
+            }
+
+            $uniques['timeseries'][] = $timeseries['uniques']['all'];
+
+            if ($uniques['min'] > $timeseries['uniques']['all']) {
+                $uniques['min'] = $timeseries['uniques']['all'];
+            }
+            if ($uniques['max'] < $timeseries['uniques']['all']) {
+                $uniques['max'] = $timeseries['uniques']['all'];
+            }
+        }
+
+        $uniques['all'] = $data['result']['totals']['uniques']['all'];
+
+        $bandwidthAll = $data['result']['totals']['bandwidth']['all'] / 1000;
+        $bandwidthAllMeasure = 'KB';
+        if ($bandwidthAll > 1000) {
+            $bandwidthAll = $bandwidthAll / 1000;
+            $bandwidthAllMeasure = 'MB';
+        }
+        if ($bandwidthAll > 1000) {
+            $bandwidthAll = $bandwidthAll / 1000;
+            $bandwidthAllMeasure = 'GB';
+        }
+        $bandwidthAll = round($bandwidthAll);
+
+        $bandwidthUncached = $data['result']['totals']['bandwidth']['uncached'] / 1000;
+        $bandwidthUncachedMeasure = 'KB';
+        if ($bandwidthUncached > 1000) {
+            $bandwidthUncached = $bandwidthUncached / 1000;
+            $bandwidthUncachedMeasure = 'MB';
+        }
+        if ($bandwidthUncached > 1000) {
+            $bandwidthUncached = $bandwidthUncached / 1000;
+            $bandwidthUncachedMeasure = 'GB';
+        }
+        $bandwidthUncached = round($bandwidthUncached);
+
+        $bandwidthCached = $data['result']['totals']['bandwidth']['cached'] / 1000;
+        $bandwidthCachedMeasure = 'KB';
+        if ($bandwidthCached > 1000) {
+            $bandwidthCached = $bandwidthCached / 1000;
+            $bandwidthCachedMeasure = 'MB';
+        }
+        if ($bandwidthCached > 1000) {
+            $bandwidthCached = $bandwidthCached / 1000;
+            $bandwidthCachedMeasure = 'GB';
+        }
+        $bandwidthCached = round($bandwidthCached);
+
+        ?>
+
+        <div id="analytics-tabs">
+            <ul class="tabs-horiz">
+                <li>
+                    <a href="#tab-analytics-requests-content" id="tab-analytics-requests"><?php echo __('Requests')?></a>
+                </li>
+                <li>
+                    <a href="#tab-analytics-bandwidth-content" id="tab-analytics-bandwidth"><?php echo __('Bandwidth')?></a>
+                </li>
+                <li>
+                    <a href="#tab-analytics-unique-content" id="tab-analytics-unique"><?php echo __('Unique Visitors')?></a>
+                </li>
+                <li>
+                    <a href="#tab-analytics-threats-content" id="tab-analytics-threats"><?php echo __('Threats')?></a>
+                </li>
+            </ul>
+        </div>
+        <div id="tab-analytics-content">
+            <div id="tab-analytics-requests-content">
+                <div class="dashboard-totals">
+                    <ul class="dashboard-totals-list">
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Total Requests')?></span>
+                            <small class="time-period"><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($data['result']['totals']['requests']['all']) ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Cached Requests')?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($data['result']['totals']['requests']['cached']); ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Uncached Requests') ?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($data['result']['totals']['requests']['uncached']) ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item"></li>
+                    </ul>
+                </div>
+
+                <div id="chart-requests"></div>
+            </div>
+            <div id="tab-analytics-bandwidth-content">
+                <div class="dashboard-totals">
+                    <ul class="dashboard-totals-list">
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Total Bandwidth')?></span>
+                            <small class="time-period"><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo $bandwidthAll . ' ' . $bandwidthAllMeasure ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Cached Bandwidth')?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo $bandwidthCached . ' ' . $bandwidthCachedMeasure ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Uncached Bandwidth') ?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo $bandwidthUncached . ' ' . $bandwidthUncachedMeasure ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item"></li>
+                    </ul>
+                </div>
+                <div id="chart-bandwidth"></div>
+            </div>
+            <div id="tab-analytics-unique-content">
+                <div class="dashboard-totals">
+                    <ul class="dashboard-totals-list">
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Total Unique Visitors')?></span>
+                            <small class="time-period"><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($uniques['all']) ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Maximum Unique Visitors')?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($uniques['max']) ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Minimum Unique Visitors') ?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php echo number_format($uniques['min']) ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item"></li>
+                    </ul>
+                </div>
+                <div id="chart-uniques"></div>
+            </div>
+            <div id="tab-analytics-threats-content">
+                <div class="dashboard-totals">
+                    <ul class="dashboard-totals-list">
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Total Threats')?></span>
+                            <small class="time-period"><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php
+                                         echo $data['result']['totals']['threats']['all'];
+                                    ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Top Country')?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php
+                                        $max = 0;
+                                        $countryLabel = '';
+                                        if (!empty($data['result']['totals']['threats']['country'])) {
+                                            $countries = $data['result']['totals']['threats']['country'];
+                                            foreach ($countries as $country => $count) {
+                                                if($count > $max) {
+                                                    $max = $count;
+                                                    $countryLabel = $country;
+                                                }
+                                            }
+                                        }
+                                        if ($max > 0) {
+                                            echo $countryLabel . ' (' . $max . ')';
+                                        } else {
+                                            echo '--';
+                                        }
+                                    ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item">
+                            <span class="dashboard-totals-label"><?php echo __('Top Threat Type') ?></span>
+                            <small><?php echo $sinceParams['label'] ?></small><br/>
+                            <strong class="dashboard-totals-value">
+                                <span class="price">
+                                    <?php
+                                    $max = 0;
+                                    $typeLabel = '';
+                                    if (!empty($data['result']['totals']['threats']['type'])) {
+                                        $types = $data['result']['totals']['threats']['type'];
+                                        foreach ($types as $type => $count) {
+                                            if($count > $max) {
+                                                $max = $count;
+                                                $typeLabel = $type;
+                                            }
+                                        }
+                                    }
+                                    if ($max > 0) {
+                                        echo $typeLabel;
+                                    } else {
+                                        echo '--';
+                                    }
+                                    ?>
+                                </span>
+                            </strong>
+                        </li>
+                        <li class="dashboard-totals-item"></li>
+                    </ul>
+                </div>
+                <div id="chart-threats"></div>
+            </div>
+        </div>
+        <script>
+            require(["jquery","mage/backend/tabs"], function($){
+                $(function() {
+                    $('#analytics-tabs').tabs({
+                        active: 'tab-analytics-requests',
+                        destination: '#tab-analytics-content',
+                        shadowTabs: []
+                    });
+                });
+            });
+        </script>
+
+        <br />
+        <br />
+
+        <div class="row">
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Bandwidth Saved')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div id="bandwidth-saved"></div>
+                <div class="text-center">
+                    <p>
+                        <strong>
+                            <?php
+                                $bandwidthTotalCached = $data['result']['totals']['bandwidth']['cached'] / 1000;
+                                $measure = ' KB';
+                                if ($bandwidthTotalCached > 1000) {
+                                    $bandwidthTotalCached = $bandwidthTotalCached / 1000;
+                                    $measure = ' MB';
+                                }
+                                if ($bandwidthTotalCached > 1000) {
+                                    $bandwidthTotalCached = $bandwidthTotalCached / 1000;
+                                    $measure = ' GB';
+                                }
+                            ?>
+                            <?php echo __(
+                                '%1 saved',
+                                round($bandwidthTotalCached, 2) . $measure
+                            )?>
+                        </strong><br>
+                        <?php
+                            $bandwidthTotalAll = $data['result']['totals']['bandwidth']['all'] / 1000;
+                            $measure = ' KB';
+                            if ($bandwidthTotalAll > 1000) {
+                                $bandwidthTotalAll = $bandwidthTotalAll / 1000;
+                                $measure = ' MB';
+                            }
+                            if ($bandwidthTotalAll > 1000) {
+                                $bandwidthTotalAll = $bandwidthTotalAll / 1000;
+                                $measure = ' GB';
+                            }
+                        ?>
+                        <?php echo __(
+                            '%1 total bandwidth',
+                            round($bandwidthTotalAll, 2) . $measure
+                        )?>
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Content Type Breakdown')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div id="content-type"></div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Traffic Served Over SSL')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div id="ssl-traffic"></div>
+                <div class="text-center">
+                    <p>
+                        <strong>
+                            <?php echo __(
+                                '%1 SSL secured requests',
+                                number_format($data['result']['totals']['requests']['ssl']['encrypted'])
+                            )?>
+                        </strong><br>
+                        <?php echo __(
+                            '%1 unsecured requests',
+                            number_format($data['result']['totals']['requests']['ssl']['unencrypted'])
+                        )?>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Total Threats Stopped')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div id="threats-count" class="chart-sizes">
+                    <?php 
+                    echo $data['result']['totals']['threats']['all'];
+                    ?>
+                </div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Types of Threats Mitigated')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <?php if (empty($data['result']['totals']['threats']['type'])): ?>
+                    <div id="threats-count" class="chart-sizes">
+                        --
+                    </div>
+                <?php else: ?>
+                    <div id="pie-threats"></div>
+                <?php endif ?>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Total Page Views')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div id="threats-count" class="chart-sizes">
+                    <?php
+                    echo number_format($data['result']['totals']['pageviews']['all']);
+                    ?>
+                </div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Top Threat Origins')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div class="block-table">
+                    <table class="data-grid">
+                        <thead>
+                            <tr>
+                               <th class="data-grid-th"><?php echo __('Country')?></th>
+                               <th class="data-grid-th"><?php echo __('Requests')?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(
+                                isset($data['result']['totals']['threats']['country']) &&
+                                count($data['result']['totals']['threats']['country']) > 0
+                            ): ?>
+                                <?php
+                                $i = 1;
+                                $countries = $data['result']['totals']['threats']['country'];
+                                arsort($countries);
+                                ?>
+                                <?php foreach ($countries as $code => $count): ?>
+                                    <?php if($i++ == 10) break; ?>
+                                    <tr class="data-row">
+                                        <td><?php echo $this->getCountryName($code)?></td>
+                                        <td><?php echo number_format($count); ?></td>
+                                    </tr>
+                                <?php endforeach ?>
+                            <?php else: ?>
+                                <tr class="data-row">
+                                    <td colspan="2"><?php echo __('No threats detected')?></td>
+                                </tr>
+                            <?php endif ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Top Traffic Origins')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div class="block-table">
+                    <table class="data-grid">
+                        <thead>
+                        <tr>
+                            <th class="data-grid-th"><?php echo __('Country')?></th>
+                            <th class="data-grid-th"><?php echo __('Traffic')?></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (
+                            isset($data['result']['totals']['requests']['country']) &&
+                            count($data['result']['totals']['requests']['country']) > 0
+                        ): ?>
+                            <?php
+                                $i = 1;
+                                $countries = $data['result']['totals']['requests']['country'];
+                                arsort($countries);
+                            ?>
+                            <?php foreach ($countries as $code => $count): ?>
+                                <?php if($i++ == 10) break; ?>
+                                <tr class="data-row">
+                                    <td><?php echo $this->getCountryName($code)?></td>
+                                    <td><?php echo number_format($count); ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                        <?php else: ?>
+                            <tr class="data-row">
+                                <td colspan="2"><?php echo __('No traffic detected')?></td>
+                            </tr>
+                        <?php endif ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+            <div class="col-m-4 analytics-block">
+                <div class="title"><?php echo __('Top Crawlers/Bots')?></div>
+                <small class="time-period"><?php echo $sinceParams['label'] ?></small>
+                <div class="block-table">
+                    <table class="data-grid">
+                        <thead>
+                        <tr>
+                            <th class="data-grid-th"><?php echo __('Crawler/Bot')?></th>
+                            <th class="data-grid-th"><?php echo __('Pages Crawled')?></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (
+                            isset($data['result']['totals']['pageviews']['search_engine']) &&
+                            count($data['result']['totals']['pageviews']['search_engine']) > 0
+                        ):?>
+                            <?php
+                                $i = 1;
+                                $bots = $data['result']['totals']['pageviews']['search_engine'];
+                                arsort($bots);
+                            ?>
+                            <?php foreach ($bots as $code => $count): ?>
+                                <?php if($i++ == 10) break; ?>
+                                <tr class="data-row">
+                                    <td><?php echo ucfirst($code)?></td>
+                                    <td><?php echo number_format($count); ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                        <?php else: ?>
+                            <tr class="data-row">
+                                <td colspan="2"><?php echo __('No page views detected')?></td>
+                            </tr>
+                        <?php endif ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <p>
+                        <strong>&nbsp;</strong><br>
+                        &nbsp;
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            require(['jquery', 'd3', 'c3'], function ($, d3, c3) {
+
+                var chart = c3.generate({
+                    bindto: '#chart-requests',
+                    data: {
+                        x: 'x',
+                        xFormat: '%Y-%m-%d %H:%M:%S',
+                        columns: [
+                            ['x', '<?php echo implode("', '", $x) ?>'],
+                            ['Uncached', <?php echo implode(', ', $requests['uncached']) ?>],
+                            ['Cached', <?php echo implode(', ', $requests['cached']) ?>]
+                        ],
+                        types: {
+                            Uncached: 'area',
+                            Cached: 'area'
+                        }
+                    },
+                    tooltip: {
+                        show: true,
+                        grouped: true,
+                    },
+                    axis: {
+                        x: {
+                            label: {
+                                text: 'Time',
+                                position: 'outer-right',
+                            },
+                            type: 'timeseries',
+                            tick: {
+                                format: '<?php echo $sinceParams['format'] ?>'
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Requests',
+                                position: 'outer-top'
+                            },
+                            tick: {
+                                format: window.d3.format(',')
+                            }
+                        }
+                    }
+                });
+
+                c3.generate({
+                    bindto: '#chart-bandwidth',
+                    data: {
+                        x: 'x',
+                        xFormat: '%Y-%m-%d %H:%M:%S',
+                        columns: [
+                            ['x', '<?php echo implode("', '", $x) ?>'],
+                            ['Uncached', <?php echo implode(', ', $bandwidth['uncached']) ?>],
+                            ['Cached', <?php echo implode(', ', $bandwidth['cached']) ?>]
+                        ],
+                        types: {
+                            Uncached: 'area',
+                            Cached: 'area'
+                        }
+                    },
+                    tooltip: {
+                        show: true,
+                        grouped: true,
+                    },
+                    axis: {
+                        x: {
+                            label: {
+                                text: 'Time',
+                                position: 'outer-right',
+                            },
+                            type: 'timeseries',
+                            tick: {
+                                format: '<?php echo $sinceParams['format'] ?>'
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Bandwidth',
+                                position: 'outer-top'
+                            },
+                            tick: {
+                                format: function (d) {
+                                    d = d / 1000;
+                                    var measure = ' KB';
+                                    if(d > 1000) {
+                                        d = d / 1000;
+                                        measure = ' MB'
+                                    }
+                                    if(d > 1000) {
+                                        d = d / 1000;
+                                        measure = ' GB'
+                                    }
+                                    return (Math.round(d * 100) / 100) + measure;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                c3.generate({
+                    bindto: '#chart-uniques',
+                    data: {
+                        x: 'x',
+                        xFormat: '%Y-%m-%d %H:%M:%S',
+                        columns: [
+                            ['x', '<?php echo implode("', '", $x) ?>'],
+                            ['Unique Visitors', <?php echo implode(', ', $uniques['timeseries']) ?>]
+                        ],
+                        types: {
+                            'Unique Visitors': 'area',
+                        }
+                    },
+                    tooltip: {
+                        show: true,
+                    },
+                    axis: {
+                        x: {
+                            label: {
+                                text: 'Time',
+                                position: 'outer-right',
+                            },
+                            type: 'timeseries',
+                            tick: {
+                                format: '<?php echo $sinceParams['format'] ?>'
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Visitors',
+                                position: 'outer-top'
+                            },
+                            tick: {
+                                format: window.d3.format(',')
+                            }
+                        }
+                    }
+                });
+
+                var chart = c3.generate({
+                    bindto: '#chart-threats',
+                    data: {
+                        x: 'x',
+                        xFormat: '%Y-%m-%d %H:%M:%S',
+                        columns: [
+                            ['x', '<?php echo implode("', '", $x) ?>'],
+                            <?php foreach ($threatTypes as $type => $values): ?>
+                                ['<?php echo $type ?>', <?php echo implode(', ', $values) ?>],
+                            <?php endforeach ?>
+                        ],
+                        types: {
+                            <?php foreach ($threatTypes as $type => $values): ?>
+                                '<?php echo $type ?>': 'area',
+                            <?php endforeach ?>
+                        }
+                    },
+                    tooltip: {
+                        show: true,
+                        grouped: true,
+                    },
+                    axis: {
+                        x: {
+                            label: {
+                                text: 'Time',
+                                position: 'outer-right',
+                            },
+                            type: 'timeseries',
+                            tick: {
+                                format: '<?php echo $sinceParams['format'] ?>'
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Threats',
+                                position: 'outer-top'
+                            },
+                            tick: {
+                                format: window.d3.format(',')
+                            }
+                        }
+                    }
+                });
+
+                c3.generate({
+                    bindto: '#bandwidth-saved',
+                    size: {
+                        width: 245,
+                        height: 180
+                    },
+                    data: {
+                        type: 'donut',
+                        columns: [
+                            ['unsaved', <?php echo $data['result']['totals']['bandwidth']['uncached'] ?>],
+                            ['saved', <?php echo $data['result']['totals']['bandwidth']['cached'] ?>],
+                        ],
+                    },
+                    color: {
+                        pattern: ['#ebebeb', '#9BCA3E']
+                    },
+                    legend: {
+                        show: false
+                    },
+                    donut: {
+                        width: 15,
+                        <?php
+                            $title = 0;
+                            if($data['result']['totals']['bandwidth']['all'] > 0) {
+                                $title = (
+                                        $data['result']['totals']['bandwidth']['cached'] /
+                                        $data['result']['totals']['bandwidth']['all']
+                                    ) * 100;
+                                $title = floor($title);
+                            }
+                        ?>
+                        title: '<?php echo $title ?>%',
+                        label: {
+                            show: false
+                        }
+                    },
+                    tooltip: {
+                        show: false
+                    }
+                });
+
+                c3.generate({
+                    bindto: '#content-type',
+                    size: {
+                        width: 245,
+                        height: 180
+                    },
+                    data: {
+                        type: 'pie',
+                        columns: [
+                            <?php foreach ($data['result']['totals']['requests']['content_type'] as $key => $value): ?>
+                                ['<?php echo $key ?>', <?php echo $value ?>],
+                            <?php endforeach ?>
+                        ]
+                    },
+                    color: {
+                        pattern: [
+                            'rgb(102, 95, 215)',
+                            'rgb(47, 123, 191)',
+                            'rgb(93, 202, 196)',
+                            'rgb(92, 225, 119)',
+                            'rgb(155, 202, 62)',
+                            'rgb(102, 95, 215)',
+                            'rgb(249, 241, 80)',
+                            'rgb(47, 123, 191)',
+                            'rgb(93, 202, 196)',
+                            'rgb(92, 225, 119)',
+                            'rgb(155, 202, 62)',
+                            'rgb(102, 95, 215)'
+                        ]
+                    },
+                    pie: {
+                        label: {
+                            format: function (value, ratio, id) {
+                                return id;
+                            }
+                        }
+                    },
+                    legend: {
+                        show: false
+                    },
+                });
+
+                c3.generate({
+                    bindto: '#ssl-traffic',
+                    size: {
+                        width: 245,
+                        height: 180
+                    },
+                    data: {
+                        type: 'donut',
+                        columns: [
+                            ['unencrypted', <?php echo $data['result']['totals']['requests']['ssl']['unencrypted'] ?>],
+                            ['encrypted', <?php echo $data['result']['totals']['requests']['ssl']['encrypted'] ?>],
+                        ],
+                    },
+                    color: {
+                        pattern: ['#ebebeb', '#2F7BBF']
+                    },
+                    legend: {
+                        show: false
+                    },
+                    donut: {
+                        width: 15,
+                        <?php
+                        if (
+                            $data['result']['totals']['requests']['ssl']['unencrypted'] > 0 ||
+                            $data['result']['totals']['requests']['ssl']['encrypted'] > 0
+                        ) {
+                            $title = (
+                                    $data['result']['totals']['requests']['ssl']['encrypted'] /
+                                    (
+                                        $data['result']['totals']['requests']['ssl']['encrypted'] +
+                                        $data['result']['totals']['requests']['ssl']['unencrypted']
+                                    )
+                                ) * 100;
+                            $title = floor($title);
+                        } else {
+                            $title = 0;
+                        }
+                        ?>
+                        title: '<?php echo $title ?>%',
+                        label: {
+                            show: false
+                        }
+                    },
+                    tooltip: {
+                        show: false
+                    }
+                });
+
+                <?php if (!empty($data['result']['totals']['threats']['type'])): ?>
+                c3.generate({
+                    bindto: '#pie-threats',
+                    size: {
+                        width: 245,
+                        height: 180
+                    },
+                    data: {
+                        type: 'pie',
+                        columns: [
+                            <?php foreach ($data['result']['totals']['threats']['type'] as $type => $count): ?>
+                                ['<?php echo $type ?>', <?php echo $count?>],
+                            <?php endforeach ?>
+                        ],
+                    },
+                    pie: {
+                        label: {
+                            format: function (value, ratio, id) {
+                                return id;
+                            }
+                        }
+                    },
+                    legend: {
+                        show: false
+                    },
+                });
+                <?php endif ?>
+            });
+
+        </script>
+    <?php
+    } else {
+
+        echo __('No settings provided');
+
+    }?>
+</div>

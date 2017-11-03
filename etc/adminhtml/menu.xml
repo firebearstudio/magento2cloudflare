@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2016 Firebear Studio. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Firebear_CloudFlare::analytics" title="CloudFlare" module="Firebear_CloudFlare" sortOrder="80" parent="Magento_Reports::report" resource="Firebear_CloudFlare::analytics"/>
+        <add id="Firebear_CloudFlare::zone_analytics" title="Analytics" module="Firebear_CloudFlare" sortOrder="10" parent="Firebear_CloudFlare::analytics" action="cloudflare/analytics" resource="Firebear_CloudFlare::zone_analytics"/>
+    </menu>
+</config>
